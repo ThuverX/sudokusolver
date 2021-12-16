@@ -1,0 +1,94 @@
+.board_cell {
+    display: flex;
+    position: relative;
+    font-size:1rem;
+    align-items: center;
+    justify-content: center;
+
+    aspect-ratio: 1 / 1;
+    background: var(--background-color);
+    color: var(--foreground-color);
+    width:100%;
+    height:100%;
+}
+
+.board_cell.full {
+  background: var(--background-color-filled);
+  color: var(--foreground-color-filled);
+}
+
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
+}
+
+@keyframes flash {
+  0% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+.board_cell input {
+    position: absolute;
+    border: none;
+    outline:none;
+    background: transparent;
+    font-size: 1em;
+    color:inherit;
+    width:100%;
+    height:100%;
+    text-align: center;
+}
+
+.board_cell input:focus {
+  background:white;
+  color: black;
+}
+
+.board_cell:nth-child(3n):not(:nth-child(9n)):before{
+  content:'';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width:100%;
+  height:100%;
+  z-index:999;
+  border-right:.1rem solid white;
+}
+
+.board_cell:nth-child(27n + 19):not(:nth-child(72n + 1)):before,
+.board_cell:nth-child(27n + 20):not(:nth-child(72n + 2)):before,
+.board_cell:nth-child(27n + 21):not(:nth-child(72n + 3)):before,
+.board_cell:nth-child(27n + 22):not(:nth-child(72n + 4)):before,
+.board_cell:nth-child(27n + 23):not(:nth-child(72n + 5)):before,
+.board_cell:nth-child(27n + 24):not(:nth-child(72n + 6)):before,
+.board_cell:nth-child(27n + 25):not(:nth-child(72n + 7)):before,
+.board_cell:nth-child(27n + 26):not(:nth-child(72n + 8)):before,
+.board_cell:nth-child(27n + 27):not(:nth-child(72n + 9)):before {
+  content:'';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width:100%;
+  height:100%;
+  z-index:59;
+  border-bottom:.1rem solid white;
+}
+
+.board_cell.flash:after {
+  content:'';
+  position: absolute;
+  left:0;
+  top:0;
+  width:100%;
+  height:100%;
+  background: red;
+  pointer-events: none;
+  animation: flash .2s;
+  opacity: 0;
+}
