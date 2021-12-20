@@ -8,46 +8,36 @@ export class SolverService {
 
     // Fully solves a sudoku board
     public static Complete(state: SudokuBoard):  SudokuResult {
-        let currentState: SudokuBoard | boolean = Util.Clone(state)
-        let previousState: SudokuBoard | boolean = currentState
-        let itterationCount: number = 0
+        let currentState: SudokuBoard = Util.Clone(state)
         let start = performance.now()
-        let solved = false
-
-        while(currentState && itterationCount < SolverService.MAX_SOLVER_ITTERATIONS) {
-            itterationCount++
-            previousState = Util.Clone(currentState)
-            currentState = SolverService.Solve(currentState as SudokuBoard)
-        }
-
-        if(currentState === false) solved = true
-
+        let [solved, itteration_count] = SolverService.Solve(currentState)
         let end = performance.now()
-
-        GlobalState.setState('board', previousState)
 
         return {
             board: state,
             start,
             end,
             solved,
-            itteration_count: itterationCount
+            itteration_count
         }
     }
 
-    public static Solve(state: SudokuBoard): SudokuBoard | boolean {
+    public static Solve(state: SudokuBoard): [boolean, number] {
         let lock_state = Util.Clone(state)
-            .map((row, y) => row.map((value, x) => ({x, y, i: x * 9 + y, value})))
+            .map((row, y) => row.map((value, x) => ({x, y, i: y * 9 + x, value})))
             .flat()
             .filter(cell => cell.value === 'empty')
             .sort((a, b) => a.i - b.i)
 
         let index = -1
-        let max_index = lock_state.length
         let itteration_count = 0
 
         let nextIndex = () => {
             index = lock_state.find(x => x.i > index)!.i
+        }
+
+        let isNextIndex = (): boolean => {
+            return !!lock_state.find(x => x.i > index)
         }
 
         let previousIndex = () => {
@@ -55,88 +45,91 @@ export class SolverService {
             index = clone.reverse().find(x => x.i < index)!.i
         }
 
-        let increaseCurrentIndex = (): boolean => {
+        let currentCell = (): [number, number, SudokuCell] => {
             let item = lock_state.find(x => x.i === index)!
 
-            let currentNum = SolverService.getCell(state, item.x, item.y)
-            
-            SolverService.setCell(state, item.x, item.y, )
+            return [ item.x, item.y, SolverService.getCell(state, item.x, item.y) ]
+        }
 
-            return false
+        let increaseCurrentIndex = (num: SudokuCell | null): number => {
+            let currentNum = num || currentCell()[2]
+
+            if(currentNum == 'empty') return 1
+            if(currentNum >= 9) return 0
+
+            return currentNum + 1
         }
 
         nextIndex()
 
-        while(index < max_index && itteration_count < SolverService.MAX_SOLVER_ITTERATIONS) {
+        let prev_num = null
+        let next_num: number = 1
+
+        while(isNextIndex() && itteration_count < SolverService.MAX_SOLVER_ITTERATIONS) {
             itteration_count++
+            
+            next_num = increaseCurrentIndex(prev_num)
+
+            if(next_num) {
+                let [x, y] = currentCell()
+
+                if(SolverService.IsCellValid(state, x, y, next_num)) {
+                    SolverService.setCell(state, x, y, next_num)
+                    prev_num = null
+                    nextIndex()
+
+                    console.log('NEXT')
+                } else {
+                    prev_num = next_num
+
+                    console.log('REPEAT')
+                }
+            } else {
+                let [x, y] = currentCell()
+                
+                SolverService.setCell(state, x, y, 'empty')
+                prev_num = null
+
+                previousIndex()
+
+                console.log('BACK')
+            }
         }
 
-        return false
+        let [x, y] = currentCell()
+
+        let final_num = 0
+
+        while(!SolverService.IsCellValid(state, x, y, final_num)){
+            final_num++
+        }
+
+        SolverService.setCell(state, x, y, final_num)
+
+        let is_done = Util.Clone(state)
+            .flat()
+            .filter(cell => cell === 'empty')
+            .length == 0
+
+        GlobalState.setState('board', state)
+        
+        return [is_done,itteration_count]
     }
 
-    public static IsCellValid(state: SudokuBoard, x: number, y: number): boolean {
-        let num = SolverService.getCell(state, x, y)
-
+    public static IsCellValid(state: SudokuBoard, x: number, y: number, num: SudokuCell): boolean {
         if(num === 'empty') return true
 
         let couldSolveRow = SolverService.testRow(state , y)
         let couldSolveCollumn = SolverService.testCollumn(state , x)
         let couldSolveQuadrant = SolverService.testQuadrant(state , x, y)
 
-        let allNums = [...new Set([...couldSolveRow, couldSolveCollumn, couldSolveQuadrant])]
-
-        return allNums.includes(num)
-    }
-
-    // Solves one itteration of the board
-    public static SolveBad(state: SudokuBoard): SudokuBoard | boolean {
-        let checked = false
-
-        for(let x = 0; x < 9; x++) {
-            for(let y = 0; y < 9; y++) {
-                if(SolverService.getCell(state, x,y) === 'empty') {
-                    checked = true
-                    let fullSet = Util.Range(1, 9)
-
-                    let couldSolveRow = SolverService.testRow(state , y)
-                    let couldSolveCollumn = SolverService.testCollumn(state , x)
-                    let couldSolveQuadrant = SolverService.testQuadrant(state , x, y)
-            
-                    let couldSolveCell = fullSet.filter((num) => 
-                    (
-                        couldSolveRow.includes(num) &&
-                        couldSolveCollumn.includes(num) &&
-                        couldSolveQuadrant.includes(num)
-                    )) 
-            
-                    if(couldSolveCell.length === 1) {
-                        // console.log(((x + 1) + "x " + (y + 1) + "y"), couldSolveCell[0])
-                            
-                        
-
-                        // for(let i = 0; i < 9; i++) {
-                        //     SolverService.setCell(state, i,y, 200)
-                        // }
-
-                        // let quadX = Math.floor(Math.max(0, x - 1) / 3) * 3
-                        // let quadY = Math.floor(Math.max(0, y - 1) / 3) * 3
-                        // for(let x = 0; x < 3; x++) {
-                        //     for(let y = 0; y < 3;y++) {
-                        //         SolverService.setCell(state, quadX + x,quadY + y, 400)
-                        //     }
-                        // }
-
-                        // console.log(couldSolveRow, couldSolveCollumn, couldSolveQuadrant)
-
-                        SolverService.setCell(state, x,y, couldSolveCell[0])
-
-                        return state
-                    }
-                }
-            }
+        if(couldSolveRow.includes(num) && 
+            couldSolveCollumn.includes(num) && 
+            couldSolveQuadrant.includes(num)) {
+                return true
         }
- 
-        return checked ? state : false
+
+        return false
     }
 
     public static ApplyTestingConfiguration(): void {
@@ -164,8 +157,6 @@ export class SolverService {
             [8,'empty',7,6,'empty',2,'empty','empty',4]
         ]
 
-        // console.log(this.testQuadrant(state, 1, 8))
-
         GlobalState.setState('board', state)
     }
 
@@ -188,16 +179,17 @@ export class SolverService {
     }
 
     public static testQuadrant(state: SudokuBoard, x: number, y: number): Array<number> {
-        let quadX = Math.floor(Math.max(0, x - 1) / 3) * 3
-        let quadY = Math.floor(Math.max(0, y - 1) / 3) * 3
+        let quadX = Math.floor(Math.max(0, x) / 3) * 3
+        let quadY = Math.floor(Math.max(0, y) / 3) * 3
 
         let fullSet = Util.Range(1, 9)
-        let quadItems = state
-            .filter((_, i) => i > quadX && i <= quadX + 3)
-            .map(row => row.filter((_, j) => j > quadY && j <= quadY + 3))
-            .flat()
-
-        // console.log(quadX, quadY, quadItems)
+        let quadItems: Array<SudokuCell> = []
+        
+        for(let x = 0; x < 3; x++) {
+            for(let y = 0; y < 3;y++) {
+                quadItems.push(SolverService.getCell(state, quadX + x,quadY + y))
+            }
+        }
 
         let output = fullSet.filter((num) => !quadItems.includes(num))
 

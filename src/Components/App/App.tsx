@@ -23,16 +23,6 @@ export default function App() {
     })
   }
 
-  const Itterate = () => {
-    let currentState = Util.Clone(GlobalState.getState<SudokuBoard>('board'))
-
-    let data = SolverService.Solve(currentState)
-
-    if(data) {
-      GlobalState.setState<SudokuBoard>('board', data as SudokuBoard)
-    }
-  }
-
   const Test = () => SolverService.ApplyTestingConfiguration()
 
   return (
@@ -47,7 +37,6 @@ export default function App() {
           </div>
         }
         <button onClick={ Solve }>Solve</button>
-        <button onClick={ Itterate }>Itterate</button>
         <button onClick={ Test }>Load testing Sudoku</button>
       </div>
       <Board></Board>
