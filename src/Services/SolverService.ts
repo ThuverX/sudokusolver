@@ -35,8 +35,61 @@ export class SolverService {
         }
     }
 
-    // Solves one itteration of the board
     public static Solve(state: SudokuBoard): SudokuBoard | boolean {
+        let lock_state = Util.Clone(state)
+            .map((row, y) => row.map((value, x) => ({x, y, i: x * 9 + y, value})))
+            .flat()
+            .filter(cell => cell.value === 'empty')
+            .sort((a, b) => a.i - b.i)
+
+        let index = -1
+        let max_index = lock_state.length
+        let itteration_count = 0
+
+        let nextIndex = () => {
+            index = lock_state.find(x => x.i > index)!.i
+        }
+
+        let previousIndex = () => {
+            let clone = Util.Clone(lock_state)
+            index = clone.reverse().find(x => x.i < index)!.i
+        }
+
+        let increaseCurrentIndex = (): boolean => {
+            let item = lock_state.find(x => x.i === index)!
+
+            let currentNum = SolverService.getCell(state, item.x, item.y)
+            
+            SolverService.setCell(state, item.x, item.y, )
+
+            return false
+        }
+
+        nextIndex()
+
+        while(index < max_index && itteration_count < SolverService.MAX_SOLVER_ITTERATIONS) {
+            itteration_count++
+        }
+
+        return false
+    }
+
+    public static IsCellValid(state: SudokuBoard, x: number, y: number): boolean {
+        let num = SolverService.getCell(state, x, y)
+
+        if(num === 'empty') return true
+
+        let couldSolveRow = SolverService.testRow(state , y)
+        let couldSolveCollumn = SolverService.testCollumn(state , x)
+        let couldSolveQuadrant = SolverService.testQuadrant(state , x, y)
+
+        let allNums = [...new Set([...couldSolveRow, couldSolveCollumn, couldSolveQuadrant])]
+
+        return allNums.includes(num)
+    }
+
+    // Solves one itteration of the board
+    public static SolveBad(state: SudokuBoard): SudokuBoard | boolean {
         let checked = false
 
         for(let x = 0; x < 9; x++) {
@@ -59,9 +112,7 @@ export class SolverService {
                     if(couldSolveCell.length === 1) {
                         // console.log(((x + 1) + "x " + (y + 1) + "y"), couldSolveCell[0])
                             
-                        // for(let i = 0; i < 9; i++) {
-                        //     SolverService.setCell(state, x,i, 300)
-                        // }
+                        
 
                         // for(let i = 0; i < 9; i++) {
                         //     SolverService.setCell(state, i,y, 200)
