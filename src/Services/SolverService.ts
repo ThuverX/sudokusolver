@@ -78,12 +78,8 @@ export class SolverService {
 
                     prev_num = null
                     nextIndex()
-
-                    console.log('NEXT')
                 } else {
                     prev_num = next_num
-
-                    console.log('REPEAT')
                 }
             } else {
                 let [x, y] = currentCell()
@@ -92,8 +88,6 @@ export class SolverService {
                 prev_num = null
 
                 previousIndex()
-
-                console.log('BACK')
             }
         }
 
