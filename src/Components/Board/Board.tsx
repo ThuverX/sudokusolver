@@ -5,7 +5,7 @@ import './Board.style.css'
 
 export default function Board() {
 
-    let [ boardState, setBoardState ] = GlobalState.useState<SudokuBoard>('board')
+    let [ boardState ] = GlobalState.useState<SudokuBoard>('board')
 
     return (
         <div className='sudoku_board'>

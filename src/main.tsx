@@ -6,9 +6,6 @@ import { SudokuBoard } from './Types/Sudoku'
 
 GlobalState.prepareState<SudokuBoard>('board', new Array(9).fill(new Array(9).fill('empty')) /* 9x9 filled with empty */)
 
-// @ts-ignore
-window.GlobalSate = GlobalState
-
 ReactDOM.render(
 	<React.StrictMode>
 		<App />

@@ -4,9 +4,9 @@ import { Util } from "../Util";
 
 export class SolverService {
 
-    public static MAX_SOLVER_ITTERATIONS = 999
+    public static MAX_SOLVER_ITTERATIONS = 9999
 
-    // Fully solves a sudoku board
+    // Solves and returns metric data
     public static Complete(state: SudokuBoard):  SudokuResult {
         let currentState: SudokuBoard = Util.Clone(state)
         let start = performance.now()
@@ -22,7 +22,7 @@ export class SolverService {
         }
     }
 
-    public static Solve(state: SudokuBoard): [boolean, number] {
+    public static Solve(state: SudokuBoard): [ boolean, number ] {
         let lock_state = Util.Clone(state)
             .map((row, y) => row.map((value, x) => ({x, y, i: y * 9 + x, value})))
             .flat()
@@ -75,6 +75,7 @@ export class SolverService {
 
                 if(SolverService.IsCellValid(state, x, y, next_num)) {
                     SolverService.setCell(state, x, y, next_num)
+
                     prev_num = null
                     nextIndex()
 
@@ -96,6 +97,7 @@ export class SolverService {
             }
         }
 
+        // Itterate last cell
         let [x, y] = currentCell()
 
         let final_num = 0
@@ -106,6 +108,7 @@ export class SolverService {
 
         SolverService.setCell(state, x, y, final_num)
 
+        // Test if any empties remain
         let is_done = Util.Clone(state)
             .flat()
             .filter(cell => cell === 'empty')
@@ -125,26 +128,29 @@ export class SolverService {
 
         if(couldSolveRow.includes(num) && 
             couldSolveCollumn.includes(num) && 
-            couldSolveQuadrant.includes(num)) {
+            couldSolveQuadrant.includes(num))
                 return true
-        }
 
         return false
     }
 
-    public static ApplyTestingConfiguration(): void {
-        // let state: SudokuBoard = [
-        //     ['empty', 'empty', 'empty', 8, 'empty', 'empty', 'empty', 'empty', 9],
-        //     ['empty', 1, 9, 'empty', 'empty', 5, 8, 3, 'empty'],
-        //     ['empty', 4, 3, 'empty', 1, 'empty', 'empty','empty',7],
-        //     [4,'empty','empty',1,5,'empty','empty','empty',3],
-        //     ['empty','empty',2,7,'empty',4,'empty',1,'empty'],
-        //     ['empty',8,'empty','empty',9,'empty',6,'empty','empty'],
-        //     ['empty',7,'empty','empty','empty',6,3,'empty','empty'],
-        //     ['empty',3,'empty','empty',7,'empty','empty',8,'empty'],
-        //     [9,'empty',4,5,'empty','empty','empty','empty',1]
-        // ]
+    public static ApplyTestingConfigurationTwo(): void {
+        let state: SudokuBoard = [
+            ['empty', 'empty', 'empty', 8, 'empty', 'empty', 'empty', 'empty', 9],
+            ['empty', 1, 9, 'empty', 'empty', 5, 8, 3, 'empty'],
+            ['empty', 4, 3, 'empty', 1, 'empty', 'empty','empty',7],
+            [4,'empty','empty',1,5,'empty','empty','empty',3],
+            ['empty','empty',2,7,'empty',4,'empty',1,'empty'],
+            ['empty',8,'empty','empty',9,'empty',6,'empty','empty'],
+            ['empty',7,'empty','empty','empty',6,3,'empty','empty'],
+            ['empty',3,'empty','empty',7,'empty','empty',8,'empty'],
+            [9,'empty',4,5,'empty','empty','empty','empty',1]
+        ]
 
+        GlobalState.setState('board', state)
+    }
+
+    public static ApplyTestingConfigurationOne(): void {
         let state: SudokuBoard = [
             ['empty','empty',3,2,'empty',6,'empty',1,9],
             [2,6,'empty','empty',8,9,7,5,'empty'],
@@ -179,14 +185,14 @@ export class SolverService {
     }
 
     public static testQuadrant(state: SudokuBoard, x: number, y: number): Array<number> {
-        let quadX = Math.floor(Math.max(0, x) / 3) * 3
-        let quadY = Math.floor(Math.max(0, y) / 3) * 3
+        let quadX = Math.floor(x / 3) * 3
+        let quadY = Math.floor(y / 3) * 3
 
         let fullSet = Util.Range(1, 9)
         let quadItems: Array<SudokuCell> = []
         
         for(let x = 0; x < 3; x++) {
-            for(let y = 0; y < 3;y++) {
+            for(let y = 0; y < 3; y++) {
                 quadItems.push(SolverService.getCell(state, quadX + x,quadY + y))
             }
         }

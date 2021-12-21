@@ -5,7 +5,6 @@ import { SolverService } from '../../Services/SolverService'
 import GlobalState from '../../GlobalState'
 import { SudokuBoard } from '../../Types/Sudoku'
 import { useState } from 'react'
-import { Util } from '../../Util'
 
 export default function App() {
 
@@ -23,7 +22,8 @@ export default function App() {
     })
   }
 
-  const Test = () => SolverService.ApplyTestingConfiguration()
+  const TestOne = () => SolverService.ApplyTestingConfigurationOne()
+  const TestTwo = () => SolverService.ApplyTestingConfigurationTwo()
 
   return (
     <div>
@@ -37,7 +37,8 @@ export default function App() {
           </div>
         }
         <button onClick={ Solve }>Solve</button>
-        <button onClick={ Test }>Load testing Sudoku</button>
+        <button onClick={ TestOne }>Load testing Sudoku 1</button>
+        <button onClick={ TestTwo }>Load testing Sudoku 2</button>
       </div>
       <Board></Board>
     </div>
